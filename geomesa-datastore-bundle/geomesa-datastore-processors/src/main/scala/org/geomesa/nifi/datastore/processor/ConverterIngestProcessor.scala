@@ -23,8 +23,8 @@ import org.apache.nifi.flowfile.FlowFile
 import org.apache.nifi.processor._
 import org.apache.nifi.processor.io.InputStreamCallback
 import org.apache.nifi.processor.util.StandardValidators
-import org.geomesa.nifi.datastore.processor.AbstractDataStoreProcessor.FeatureWriters
-import org.geomesa.nifi.datastore.processor.AbstractDataStoreProcessor.FeatureWriters.SimpleWriter
+import org.geomesa.nifi.datastore.processor.DataStoreIngestProcessor.FeatureWriters
+import org.geomesa.nifi.datastore.processor.DataStoreIngestProcessor.FeatureWriters.SimpleWriter
 import org.geomesa.nifi.datastore.processor.CompatibilityMode.CompatibilityMode
 import org.geomesa.nifi.datastore.processor.validators.ConverterValidator
 import org.geotools.data._
@@ -49,7 +49,7 @@ trait ConverterIngestProcessor extends FeatureTypeProcessor {
 
   import ConverterIngestProcessor._
   import FeatureTypeProcessor._
-  import AbstractDataStoreProcessor.Properties.SchemaCompatibilityMode
+  import DataStoreIngestProcessor.Properties.SchemaCompatibilityMode
 
   import scala.collection.JavaConverters._
 

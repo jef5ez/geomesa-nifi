@@ -12,7 +12,7 @@ import org.apache.nifi.annotation.behavior.InputRequirement.Requirement
 import org.apache.nifi.annotation.behavior.{InputRequirement, SupportsBatching}
 import org.apache.nifi.annotation.documentation.{CapabilityDescription, Tags}
 import org.geomesa.nifi.datastore.processor.utils.PropertyDescriptorUtils
-import org.geomesa.nifi.datastore.processor.{AbstractDataStoreProcessor, AwsGeoIngestProcessor}
+import org.geomesa.nifi.datastore.processor.{DataStoreIngestProcessor, AwsDataStoreProcessor}
 import org.locationtech.geomesa.hbase.data.{HBaseDataStoreFactory, HBaseDataStoreParams}
 import org.locationtech.geomesa.utils.geotools.GeoMesaParam
 
@@ -21,7 +21,7 @@ import org.locationtech.geomesa.utils.geotools.GeoMesaParam
 @InputRequirement(Requirement.INPUT_REQUIRED)
 @SupportsBatching
 abstract class GeoMesaHBaseProcessor
-    extends AbstractDataStoreProcessor(GeoMesaHBaseProcessor.HBaseProperties) with AwsGeoIngestProcessor {
+    extends DataStoreIngestProcessor(GeoMesaHBaseProcessor.HBaseProperties) with AwsDataStoreProcessor {
   override protected def configParam: GeoMesaParam[String] = HBaseDataStoreParams.ConfigsParam
 }
 

@@ -11,12 +11,8 @@ package org.geomesa.nifi.datastore
 import org.apache.nifi.components.ValidationResult
 import org.apache.nifi.flowfile.FlowFile
 import org.apache.nifi.processor.Relationship
-import org.geotools.data.FeatureWriter
-import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
 
 package object processor {
-
-  type SimpleFeatureWriter = FeatureWriter[SimpleFeatureType, SimpleFeature]
 
   /**
    * Full name of a flow file

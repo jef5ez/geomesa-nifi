@@ -20,13 +20,12 @@ import org.apache.nifi.annotation.lifecycle._
 import org.apache.nifi.components.PropertyDescriptor
 import org.apache.nifi.expression.ExpressionLanguageScope
 import org.apache.nifi.flowfile.FlowFile
-import org.apache.nifi.logging.ComponentLog
 import org.apache.nifi.processor._
 import org.apache.nifi.processor.util.StandardValidators
 import org.apache.nifi.util.FormatUtils
-import org.geomesa.nifi.datastore.processor.AbstractDataStoreProcessor.FeatureWriters.{AppendWriter, ModifyWriter, SimpleWriter}
-import org.geomesa.nifi.datastore.processor.AbstractDataStoreProcessor.{FeatureWriters, ModifyWriters, PooledWriters, SingletonWriters}
 import org.geomesa.nifi.datastore.processor.CompatibilityMode.CompatibilityMode
+import org.geomesa.nifi.datastore.processor.DataStoreIngestProcessor.FeatureWriters.{AppendWriter, ModifyWriter, SimpleWriter}
+import org.geomesa.nifi.datastore.processor.DataStoreIngestProcessor.{FeatureWriters, ModifyWriters, PooledWriters, SingletonWriters}
 import org.geotools.data._
 import org.geotools.filter.text.ecql.ECQL
 import org.geotools.util.factory.Hints
@@ -45,52 +44,25 @@ import scala.util.{Failure, Success, Try}
   *
   * @param dataStoreProperties properties exposed through NiFi used to load the data store
   */
-abstract class AbstractDataStoreProcessor(dataStoreProperties: Seq[PropertyDescriptor]) extends AbstractProcessor {
+abstract class DataStoreIngestProcessor(dataStoreProperties: Seq[PropertyDescriptor])
+    extends DataStoreProcessor(dataStoreProperties) {
 
-  import AbstractDataStoreProcessor.Properties._
+  import DataStoreIngestProcessor.Properties._
   import Relationships.{FailureRelationship, SuccessRelationship}
 
   import scala.collection.JavaConverters._
 
-  private var descriptors: Seq[PropertyDescriptor] = _
-  private var relationships: Set[Relationship] = _
-
   @volatile
   private var ingest: IngestProcessor = _
 
-  protected def logger: ComponentLog = getLogger
-
-  override protected def init(context: ProcessorInitializationContext): Unit = {
-    relationships = Set(SuccessRelationship, FailureRelationship)
-    initDescriptors()
-    logger.info(s"Props are ${descriptors.mkString(", ")}")
-    logger.info(s"Relationships are ${relationships.mkString(", ")}")
-  }
-
-  override def getRelationships: java.util.Set[Relationship] = relationships.asJava
-  override def getSupportedPropertyDescriptors: java.util.List[PropertyDescriptor] = descriptors.asJava
-
   @OnAdded // reload on add to pick up any sft/converter classpath changes
-  def initDescriptors(): Unit = {
-    descriptors =
-        getProcessorProperties ++ Seq(ExtraClasspaths) ++
-            dataStoreProperties ++ getConfigProperties ++ getServiceProperties
-  }
+  def reloadDescriptors(): Unit = loadDescriptors()
 
   @OnScheduled
   def initialize(context: ProcessContext): Unit = {
     logger.info("Initializing")
 
-    val dataStore = {
-      val props = getDataStoreParams(context)
-      lazy val safeToLog = {
-        val sensitive = context.getProperties.keySet().asScala.collect { case p if p.isSensitive => p.getName }
-        props.map { case (k, v) => s"$k -> ${if (sensitive.contains(k)) { "***" } else { v }}" }
-      }
-      logger.trace(s"DataStore properties: ${safeToLog.mkString(", ")}")
-      DataStoreFinder.getDataStore(props.asJava)
-    }
-    require(dataStore != null, "Could not load datastore using provided parameters")
+    val dataStore = loadDataStore(context)
 
     try {
       val appender = if (context.getProperty(FeatureWriterCaching).getValue.toBoolean) {
@@ -151,36 +123,11 @@ abstract class AbstractDataStoreProcessor(dataStoreProperties: Seq[PropertyDescr
     logger.info(s"Shut down in ${System.currentTimeMillis() - start}ms")
   }
 
-  /**
-   * Get the main processor params - these will come first in the UI
-   *
-   * @return
-   */
-  protected def getProcessorProperties: Seq[PropertyDescriptor] = Seq.empty
+  override protected def getExtraProperties: Seq[PropertyDescriptor] =
+    super.getExtraProperties ++ Seq(ExtraClasspaths)
 
-  /**
-   * Get params for looking up the data store - these will come second in the UI, after the main params
-   *
-   * @param context context
-   * @return
-   */
-  protected def getDataStoreParams(context: ProcessContext): Map[String, _] =
-    AbstractDataStoreProcessor.getDataStoreParams(context, dataStoreProperties)
-
-  /**
-   * Get params for less common configs - these will come third in the UI, after the data store params
-   *
-   * @return
-   */
-  protected def getConfigProperties: Seq[PropertyDescriptor] =
-    Seq(WriteMode, ModifyAttribute, NifiBatchSize, FeatureWriterCaching, FeatureWriterCacheTimeout)
-
-  /**
-   * Get params for configuration services - these will come fourth in the UI, after config params
-   *
-   * @return
-   */
-  protected def getServiceProperties: Seq[PropertyDescriptor] = Seq.empty
+  override protected def getConfigProperties: Seq[PropertyDescriptor] =
+    super.getConfigProperties ++ Seq(WriteMode, ModifyAttribute, FeatureWriterCaching, FeatureWriterCacheTimeout)
 
   /**
    * Provides the processor a chance to configure a feature type before it's created in the data store
@@ -318,24 +265,9 @@ abstract class AbstractDataStoreProcessor(dataStoreProperties: Seq[PropertyDescr
   }
 }
 
-object AbstractDataStoreProcessor {
+object DataStoreIngestProcessor {
 
   import scala.collection.JavaConverters._
-
-  def getDataStoreParams(context: ProcessContext, props: Seq[PropertyDescriptor]): Map[String, _] = {
-    val builder = Map.newBuilder[String, AnyRef]
-    props.foreach { p =>
-      val property = {
-        val prop = context.getProperty(p.getName)
-        if (p.isExpressionLanguageSupported) { prop.evaluateAttributeExpressions() }  else { prop }
-      }
-      val value = property.getValue
-      if (value != null) {
-        builder += p.getName -> value
-      }
-    }
-    builder.result
-  }
 
   /**
    * Abstraction over feature writers
@@ -373,7 +305,8 @@ object AbstractDataStoreProcessor {
       def apply(f: SimpleFeature): Unit
     }
 
-    case class AppendWriter(typeName: String, writer: SimpleFeatureWriter) extends SimpleWriter {
+    case class AppendWriter(typeName: String, writer: FeatureWriter[SimpleFeatureType, SimpleFeature])
+        extends SimpleWriter {
       override def apply(f: SimpleFeature): Unit = FeatureUtils.write(writer, f)
       override def close(): Unit = CloseWithLogging(writer)
     }

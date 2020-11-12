@@ -15,7 +15,7 @@ import org.apache.nifi.components.{PropertyDescriptor, ValidationContext, Valida
 import org.apache.nifi.expression.ExpressionLanguageScope
 import org.apache.nifi.processor._
 import org.apache.nifi.processor.util.StandardValidators
-import org.geomesa.nifi.datastore.processor.AbstractDataStoreProcessor
+import org.geomesa.nifi.datastore.processor.DataStoreIngestProcessor
 import org.geotools.data.{DataStoreFactorySpi, DataStoreFinder}
 
 @Tags(Array("geomesa", "geo", "ingest", "geotools", "datastore", "features", "simple feature"))
@@ -23,7 +23,7 @@ import org.geotools.data.{DataStoreFactorySpi, DataStoreFinder}
 @InputRequirement(Requirement.INPUT_REQUIRED)
 @SupportsBatching
 abstract class GeoToolsIngestProcessor
-    extends AbstractDataStoreProcessor(Seq(GeoToolsIngestProcessor.DataStoreName)) {
+    extends DataStoreIngestProcessor(Seq(GeoToolsIngestProcessor.DataStoreName)) {
 
   import GeoToolsIngestProcessor.DataStoreName
 

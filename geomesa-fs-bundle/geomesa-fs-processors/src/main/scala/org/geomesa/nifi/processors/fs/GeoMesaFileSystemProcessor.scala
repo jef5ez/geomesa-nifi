@@ -16,7 +16,7 @@ import org.apache.nifi.components.PropertyDescriptor
 import org.apache.nifi.processor.ProcessContext
 import org.apache.nifi.processor.util.StandardValidators
 import org.geomesa.nifi.datastore.processor.utils.PropertyDescriptorUtils
-import org.geomesa.nifi.datastore.processor.{AbstractDataStoreProcessor, AwsGeoIngestProcessor}
+import org.geomesa.nifi.datastore.processor.{DataStoreIngestProcessor, AwsDataStoreProcessor}
 import org.locationtech.geomesa.fs.data.FileSystemDataStoreFactory
 import org.locationtech.geomesa.fs.data.FileSystemDataStoreFactory.FileSystemDataStoreParams
 import org.locationtech.geomesa.fs.tools.utils.PartitionSchemeArgResolver
@@ -28,7 +28,7 @@ import org.opengis.feature.simple.SimpleFeatureType
 @InputRequirement(Requirement.INPUT_REQUIRED)
 @SupportsBatching
 abstract class GeoMesaFileSystemProcessor
-    extends AbstractDataStoreProcessor(GeoMesaFileSystemProcessor.FileSystemProperties) with AwsGeoIngestProcessor {
+    extends DataStoreIngestProcessor(GeoMesaFileSystemProcessor.FileSystemProperties) with AwsDataStoreProcessor {
 
   import GeoMesaFileSystemProcessor._
   import org.locationtech.geomesa.fs.storage.common.RichSimpleFeatureType

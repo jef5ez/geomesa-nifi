@@ -16,8 +16,8 @@ import org.apache.nifi.flowfile.FlowFile
 import org.apache.nifi.processor._
 import org.apache.nifi.processor.io.InputStreamCallback
 import org.apache.nifi.processor.util.StandardValidators
-import org.geomesa.nifi.datastore.processor.AbstractDataStoreProcessor.FeatureWriters
-import org.geomesa.nifi.datastore.processor.AbstractDataStoreProcessor.FeatureWriters.SimpleWriter
+import org.geomesa.nifi.datastore.processor.DataStoreIngestProcessor.FeatureWriters
+import org.geomesa.nifi.datastore.processor.DataStoreIngestProcessor.FeatureWriters.SimpleWriter
 import org.geomesa.nifi.datastore.processor.AvroIngestProcessor.{LenientMatch, convert}
 import org.geotools.data._
 import org.geotools.feature.simple.SimpleFeatureBuilder

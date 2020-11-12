@@ -13,7 +13,7 @@ import org.apache.nifi.annotation.behavior.{InputRequirement, SupportsBatching}
 import org.apache.nifi.annotation.documentation.{CapabilityDescription, Tags}
 import org.apache.nifi.components.{PropertyDescriptor, ValidationContext, ValidationResult}
 import org.apache.nifi.processor.ProcessContext
-import org.geomesa.nifi.datastore.processor.AbstractDataStoreProcessor
+import org.geomesa.nifi.datastore.processor.DataStoreIngestProcessor
 import org.geomesa.nifi.datastore.processor.utils.PropertyDescriptorUtils
 import org.geomesa.nifi.datastore.services.DataStoreConfigService
 import org.locationtech.geomesa.accumulo.data.{AccumuloDataStoreFactory, AccumuloDataStoreParams}
@@ -23,7 +23,7 @@ import org.locationtech.geomesa.accumulo.data.{AccumuloDataStoreFactory, Accumul
 @InputRequirement(Requirement.INPUT_REQUIRED)
 @SupportsBatching
 abstract class AccumuloIngestProcessor
-    extends AbstractDataStoreProcessor(AccumuloIngestProcessor.AccumuloProperties) {
+    extends DataStoreIngestProcessor(AccumuloIngestProcessor.AccumuloProperties) {
 
   import AccumuloDataStoreParams._
   import AccumuloIngestProcessor._

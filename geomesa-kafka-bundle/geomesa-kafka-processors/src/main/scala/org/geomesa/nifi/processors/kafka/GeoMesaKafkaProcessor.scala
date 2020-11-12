@@ -12,7 +12,7 @@ import org.apache.nifi.annotation.behavior.InputRequirement.Requirement
 import org.apache.nifi.annotation.behavior.{InputRequirement, SupportsBatching}
 import org.apache.nifi.annotation.documentation.{CapabilityDescription, Tags}
 import org.apache.nifi.processor.ProcessContext
-import org.geomesa.nifi.datastore.processor.AbstractDataStoreProcessor
+import org.geomesa.nifi.datastore.processor.DataStoreIngestProcessor
 import org.geomesa.nifi.datastore.processor.utils.PropertyDescriptorUtils
 import org.locationtech.geomesa.kafka.data.KafkaDataStoreParams.{ProducerConfig, TopicPartitions, TopicReplication}
 import org.locationtech.geomesa.kafka.data.{KafkaDataStoreFactory, KafkaDataStoreParams}
@@ -21,7 +21,7 @@ import org.locationtech.geomesa.kafka.data.{KafkaDataStoreFactory, KafkaDataStor
 @CapabilityDescription("Convert and ingest data files into GeoMesa")
 @InputRequirement(Requirement.INPUT_REQUIRED)
 @SupportsBatching
-abstract class GeoMesaKafkaProcessor extends AbstractDataStoreProcessor(GeoMesaKafkaProcessor.KafkaProperties) {
+abstract class GeoMesaKafkaProcessor extends DataStoreIngestProcessor(GeoMesaKafkaProcessor.KafkaProperties) {
   // set consumer count to zero to disable consuming
   override protected def getDataStoreParams(context: ProcessContext): Map[String, _] =
     super.getDataStoreParams(context) ++ Map(KafkaDataStoreParams.ConsumerCount.getName -> Int.box(0))
